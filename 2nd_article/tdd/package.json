@@ -1,0 +1,17 @@
+{
+  "name": "practical_tdd_bdd_2nd_article_tdd_example",
+  "version": "0.0.0",
+  "author": "Sasha Koss <koss@nocorp.me>",
+  "description": "TDD example for second article of series 'Practical TDD/BDD in JavaScript'",
+
+  "devDependencies": {
+    "coffee-script": "1.3.3",
+    "mocha":         "1.3.2"
+  },
+
+  "license": "MIT",
+
+  "engine": {
+    "node": ">= 0.4"
+  }
+}
