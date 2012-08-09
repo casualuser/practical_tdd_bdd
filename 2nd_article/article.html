@@ -1,0 +1,288 @@
+<img src="http://habrastorage.org/storage2/de9/dc2/580/de9dc25809153c2571c666cd6e48e4a8.png"/>
+
+<h4>Введние</h4>
+Это продолжение цикла "Практика TDD/BDD на примере JavaScript". <a href="http://habrahabr.ru/company/evilmartians/blog/148751/">В первой, вводной статье</a>, я попытался убедить разработчиков в необходимости, если не писать тесты на всех своих проектах, то хотя бы свободно владеть темой и знать зачем это им нужно.
+
+Сегодня я расскажу что такое TDD (test-driven developement) и на простом примере покажу как это работает. Во второй части будет расмотрено BDD (behaviour-drive development) в сравнении с TDD и на практике.
+
+<h4>TDD</h4>
+<h5>Что такое TDD</h5>
+Разработка через тестирование выражается в простом правиле: сначала тесты, а потом код.
+
+Если вы знакомы с темой и тестовым фреймворком, которым вы пользуетесь, то выразить задачу в тестах даже проще, чем объяснить её вашему коллеге.
+
+Когда у вас есть тесты, код писать очень просто, задача сводится к тому, чтобы удовлетворить описанные вами условия.
+
+Вы четко понимаете задачу, у вас перед глазами пример использования будущего кода, что еще нужно для удачного дизайна и успешного решения?
+<habracut/>
+<h5>Процесс</h5>
+Как обычно выглядит TDD процесс? Если по шагам и вкратце, то так:
+
+<ol>
+  <li>Вы берете описание задачи из головы или бумаги и думаете над тем, с чего вы начнете её решение.</li>
+  <li>Вы описываете небольшой участок кода (руководствуясь принципом разделяй и властвуй), проверяя результат выполнения еще не существующей функции (метода, класса etc). Если функция может принимать много аргументов или иметь несколько вариантов использования, то ограничиваетесь лишь 2-3 примерами, избегая подробного описания всех вариантов.</li>
+  <li>Запускаете тесты. Тесты — красные (тут и далее, красные тесты — упавшие, зеленые — прошедшие)</li>
+  <li>Пишите код, удовлетворяя условия написанных тестов.</li>
+  <li>Запускаете тесты. Тесты — зеленые.</li>
+  <li>Переходите к первому или ко второму шагу.</li>
+</ol>
+Теория — ничто, опыт — все. Давайте что-нибудь сделаем используя методолгию TDD.
+
+<h5>Практика</h5>
+Для того, чтобы наглядно продемонстрировать процесс, я придумал задачу:
+
+Написать функцию X которая принимает другую функцию Y в качестве аргумента.
+
+Функция Y принимает два аргумента: ключ и значение.
+
+Результатом выполнения функции X(Y) будет функция Z которая принимает как два аргумента (ключ-значение), так и один (коллекция ключей-значений).
+
+Функция Z должна вызывать функцию Y, N раз, где N соотвествует кол-ву пар ключ-значение переданное в Z.
+
+Не понятна формулировка? Не страшно, вот примеры:
+
+В jQuery есть функция <a href="http://api.jquery.com/css/">$.fn.css</a> которая принимает либо два параметра (ключ-значение) либо коллекцию таких пар:
+
+<source lang="javascript">
+$('body').css('background', '#BADA55');
+$('body').css({ background: '#BADA55', color: 'black' });
+</source>
+У нас и должна получится функция которая позволяет делать такие (как $.fn.css) функции.
+
+<source lang="javascript">
+var printKeyValue = function (key, value) {
+    console.log('Key: ' + key + ', value: ' + value);
+};
+
+var whateveredFn = whatever(printKeyValue);
+
+whateveredFn('awe', 'some');
+// => Key: awe, value: some
+
+whateveredFn({ one: 1, two: 2 });
+// => Key: one, value: 1
+// => Key: two, value: 2
+</source>
+Как вы помните (<a href="http://habrahabr.ru/company/evilmartians/blog/148264/">помните же?</a>) понимание это важный, первый шаг в сторону успешного решения. Плюс вы наверняка отметили, насколько примеры понятнее четко сформулированной задачи ;-).
+
+У меня уже есть готовая, настроенная тестовая среда. Как ее готовить, мы рассмотрим в следующей статьях.
+
+В примерах я буду использовать CoffeeScript, вместо JavaScript. По двум причинам:
+
+<ul>
+  <li>эти примеры не требуют внимательного изучения кода, т.к в первую очередь демонстрируют процесс;</li>
+  <li>я хочу понять насколько вы, читатели, хорошо понимате CoffeeScript.</li>
+</ul>
+Давайте напишем свой первый тест, чтобы убедиться, что все работает.
+
+<source lang="coffeescript">
+test 'whatever works properly', ->
+  assert.equal(typeof whatever, 'function')
+</source>
+Сохраняем файл, тестов и видим результат:
+
+<img src="http://habrastorage.org/storage2/b46/a00/7ee/b46a007ee6915a7234c3535b063f041f.png" alt="image"/>
+
+У меня настроено автоматическое тестирование, т.е. мне не нужно после каждого изменения запускать тесты в консоли, они делают это сами — при сохранении исходника или тестов.
+
+Это важный атрибут TDD процесса, т.к. избавляет нас от рутины и усоряет процесс. Пишем код, сохраняем, видим результат.
+
+Кроме того, результаты у меня показываются в notifications и дублируются синтезируемым голосом (спасибо <a href="https://github.com/ruby-talks/talks">talks</a>, gem'у от моего коллеги, <hh user="gazay" />).
+
+Проверять является ли whatever функцией весьма безполезно. Как проверить что наша функция работает правильно? Ответ на этот вопрос я дал еще в описании задачи. Так давайте просто скопируем примеры в тесты:
+
+<source lang="coffeescript">
+array = []
+# Проверять успешность решения нашей задачи,
+# мы будем с помощью простой функции, которая добавляет пару ключей в массив `array`
+add = (key, value) ->
+  array.push(key: key, value: value)
+# А вот и наш, испытуемый
+whatevered = whatever(add)
+
+# Перед каждым тестом очищаем массив
+setup -> array = []
+
+suite 'whatevered function', ->
+
+  # Проверяем, что новая функция правильно
+  # принимает два аргумента:
+  test 'call with 2 arguments', ->
+    whatevered('awe', 'some')
+
+    assert(array[0].key, 'awe')
+    assert(array[0].value, 'some')
+
+  # Проверяем, что новая функция правильно
+  # принимает коллекцию ключей:
+  test 'call with collection of pairs', ->
+    whatevered(one: 1, two: 2)
+
+    assert(array[0].key, 'one')
+    assert(array[0].value, 1)
+
+    assert(array[1].key, 'two')
+    assert(array[1].value, 2)
+</source>
+<img src="http://habrastorage.org/storage2/8d2/04b/091/8d204b091483db91b3104fecc4b8c615.png" alt="image"/>
+
+Сохраняем и видим результат: оба написанных теста завалились. Отлично, давайте наконец приступим к коду.
+
+Для начала напишим код для варианта, когда к нам приходят два параметра:
+
+<source lang="coffeescript">
+whatever = (fn) ->
+  (key, value) ->
+    fn(key, value)
+</source>
+Сохраняем и ура, 1 тест пройден!
+
+<img src="http://habrastorage.org/storage2/58a/4ca/0f5/58a4ca0f521443bbe8346c52ff299b12.png" alt="image"/>
+
+Остался еще один вариант, когда первый аргумент — объект. Добавим простое условие и переберем объект, вызывая нашу функцию для каждой пары:
+
+<source lang="coffeescript">
+whatever = (fn) ->
+  (possibleKey, possibleValue) ->
+    if typeof possibleKey == 'object'
+      for key, value of possibleKey
+        fn(key, value)
+    else
+      fn(possibleKey, possibleValue)
+</source>
+<img src="http://habrastorage.org/storage2/621/cb9/5d6/621cb95d63781fd62984c394cccb8fde.png" alt="image"/>
+
+Вот так выглядит TDD процесс. Теперь мы можем приступить к рефакторингу или добавлению новых фич. Но этим мы займемся во второй части, уже по BDD методолгии.
+
+<h4>BDD</h4>
+<h5>Что такое BDD</h5>
+BDD это модификация TDD, как и в TDD, вы пишете тесты до того, как появится код, но делаете это иначе.
+
+BDD ориентирован на поведение, когда как TDD ориентирован на сам код.
+
+Это значит, что вы должны думать не функциями и возращаемыми значениями, а поведением тестируемой сущности.
+
+В контекте задачи, прикрутить нотификации о новых комментариях, при использвовании TDD мы думаем так:
+
+Когда мы вызываем функцию addComment, должна быть вызвана функция notifyAboutComment, если у user notifyAboutComments == true.
+
+В BDD мы смотрим на это под другим углом:
+
+Когда к статье пользователя кто-либо постит комментарий, мы должны послать ему e-mail, если он включил нотификации о новых коментариях.
+
+Вы конечно же проверите, что addComment вызывает notifyAboutComment, но соус уже другой.
+
+Не смотря на тонкую такую грань BDD помогает:
+
+<ul>
+  <li>понять с чего начать;</li>
+  <li>понять что тестировать;</li>
+  <li>сколько тестов нужно написать за один подход;</li>
+  <li>как структурировать тесты.</li>
+</ul>
+<h5>Практика</h5>
+Как же будут выглядеть тесты для нашей функции whatever в BDD варианте?
+
+Давайте в первую очередь перепишем наши тесты на BDD лад:
+
+<source lang="coffeescript">
+describe 'whatevered function', ->
+
+  beforeEach -> array = []
+
+  it 'should accept 2 arguments and call original function once', ->
+    whatevered('awe', 'some')
+    array[0].should.eql(key: 'awe', value: 'some')
+
+  it 'should accept object as argument and call original function for each key', ->
+    whatevered(one: 1, two: 2)
+    array[0].should.eql(key: 'one', value: 1)
+    array[1].should.eql(key: 'two', value: 2)
+</source>
+Вместо обычных assetions мы использовали it и описали желаемое поведение в формате: "должен принимать 2 аргумента и единожды вызывать оригинальную функцию".
+
+Чего мы добились этим изменением?
+
+Тесты удобно читать, каждый example всегда снабжен четкой формулировкой. Тесты можно использовать как документацию.
+
+Кроме того вывод в консоли стал предельно понятным:
+
+<img src="http://habrastorage.org/storage2/219/05d/844/21905d844f590e6ffbf51e8a5e6c300c.png" alt="image"/>
+
+А значит проще понять, что не работает.
+
+Давайте вернемся к коду. У нашей функции whatever есть один недостаток: она не сохраняет контекст.
+
+Давайте исправим этот недочет!
+
+Пишем тест "должен использоваться контекст, переданный в качестве второго аргумента":
+
+<source lang="coffeescript">
+it 'should apply passed context to original function', ->
+  obj =
+    array: []
+    add: (key, value) ->
+      @array.push(key: key, value: value)
+  whatevered = whatever(obj.add, obj)
+  whatevered('lol', 'w00t')
+  obj.array[0].should.eql(key: 'lol', value: 'w00t')
+</source>
+Как и ожидалось, тест завалился:
+
+<img src="http://habrastorage.org/storage2/d36/eaf/755/d36eaf755495032540482f595f34c793.png" alt="image"/>
+
+TypeError: Cannot call method 'push' of undefined.
+
+Что ж, это очевидно. Чтобы это исправить, используем call:
+
+<source lang="coffeescript">
+whatever = (fn, context) ->
+  (possibleKey, possibleValue) ->
+    if typeof possibleKey == 'object'
+      for key, value of possibleKey
+        fn.call(context, key, value)
+    else
+      fn.call(context, possibleKey, possibleValue)
+</source>
+Тесты пройдены:
+
+<img src="http://habrastorage.org/storage2/781/589/d40/781589d407bdb08b30992f2413ee19b5.png" alt="image"/>
+
+Теперь можно заняться рефакторингом, наша функция не идеальна, у нас дважды вызывается call. Давайте используем рекурсию:
+
+<source lang="coffeescript">
+whatever = (fn, context) ->
+  fn = (possibleKey, possibleValue) ->
+    if typeof possibleKey == 'object'
+      fn(key, value) for key, value of possibleKey
+    else
+      fn.call(context, possibleKey, possibleValue)
+</source>
+Если первый аргумент — объект, функция вызовет сама себя передавая уже два аргумента, ключ и значение.
+
+Но что случилось, тесты упали!
+
+<img src="http://habrastorage.org/storage2/fb2/c70/c59/fb2c70c591b2de1879460fb39b2708f9.png" alt="image"/>
+
+Упс. Я одинаково назвал и оригинальную и новую функцию. Исправим эту ошибку:
+
+<source lang="coffeescript">
+whatever = (fn, context) ->
+  whatevered = (possibleKey, possibleValue) ->
+    if typeof possibleKey == 'object'
+      whatevered(key, value) for key, value of possibleKey
+    else
+      fn.call(context, possibleKey, possibleValue)
+</source>
+Ура:
+
+<img src="http://habrastorage.org/storage2/0bb/0f6/9cb/0bb0f69cb311eb0156b06440c5bd8bb8.png" alt="image"/>
+
+<h4>Заключение</h4>
+Я бы не хотел, чтобы эту статью воспринимали как руководство. Это скорее демонстрация, к настоящей практике мы перейдем в следущей статье. Настроим окружение, ознакомимся с инструментами.
+
+<a href="https://github.com/kossnocorp/practical_tdd_bdd/blob/master/2nd_article/article.html">Исходны код статьи доступен на GitHub</a>. Пул-реквесты приветствуются!
+
+<a href="https://github.com/kossnocorp/practical_tdd_bdd/tree/master/2nd_article">Примеры из статьи</a>.
+
+Спасибо за внимание!
